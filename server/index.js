@@ -36,7 +36,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -76,10 +79,12 @@ app.get('*', (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+const HOST = process.env.HOST || '0.0.0.0';
+server.listen(PORT, HOST, () => {
   console.log(`=================================================`);
   console.log(`  🚀 KubeManage Web UI Dashboard Running!`);
-  console.log(`  URL: http://localhost:${PORT}`);
+  console.log(`  Local: http://localhost:${PORT}`);
+  console.log(`  Network: http://0.0.0.0:${PORT}`);
   console.log(`  Default User: admin / admin123`);
   console.log(`=================================================`);
 });

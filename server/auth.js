@@ -47,7 +47,7 @@ function login(req, res) {
   res.cookie('token', token, {
     httpOnly: true,
     secure: false, // set true if using https
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: 8 * 60 * 60 * 1000 // 8 hours
   });
 
