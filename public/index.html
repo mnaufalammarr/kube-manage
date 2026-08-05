@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KubeManage — Kubernetes Management Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- LOGIN PAGE VIEW -->
+  <div id="login-container">
+    <div class="login-card">
+      <div class="login-logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        <h1>KubeManage</h1>
+      </div>
+      <p class="login-subtitle">Kubernetes Cluster Dashboard</p>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" class="input-field" placeholder="Enter username" required value="admin">
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" class="input-field" placeholder="Enter password" required value="admin123">
+        </div>
+        <button type="submit" class="btn btn-primary">Sign In</button>
+      </form>
+
+      <div class="login-footer">
+        KubeManage v1.0.0 &bull; Enterprise SRE Dashboard
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP LAYOUT VIEW -->
+  <div id="app-layout" class="hidden">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <a href="#dashboard" class="brand">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 2v20M2 12h20"></path>
+          </svg>
+          KubeManage
+        </a>
+      </div>
+
+      <div class="topbar-center">
+        <div class="ns-selector-container">
+          <label for="ns-select">Namespace:</label>
+          <select id="ns-select" class="ns-select">
+            <option value="default">default</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <div class="cluster-badge">
+          <span id="cluster-status-dot" class="status-dot"></span>
+          <span id="current-cluster-name">Context: Loading...</span>
+        </div>
+        <div class="user-menu">
+          <span id="user-display-name" class="user-name">Administrator</span>
+          <button id="logout-btn" class="logout-btn">Logout</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="main-container">
+      <!-- Sidebar Navigation -->
+      <nav class="sidebar">
+        <div class="nav-section">Overview</div>
+        <a href="#dashboard" class="nav-item active" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          Dashboard
+        </a>
+        <a href="#pods" class="nav-item" data-page="pods">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+          Pods List
+        </a>
+
+        <div class="nav-section">Deployments</div>
+        <a href="#deployments" class="nav-item" data-page="deployments">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+          Update / Rollback
+        </a>
+        <a href="#scale" class="nav-item" data-page="scale">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12H3M12 3v18"></path></svg>
+          Scale Replicas
+        </a>
+        <a href="#snapshots" class="nav-item" data-page="snapshots">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+          Snapshots
+        </a>
+
+        <div class="nav-section">Configuration</div>
+        <a href="#resources" class="nav-item" data-page="resources">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"></path></svg>
+          CPU & Memory
+        </a>
+        <a href="#hpa" class="nav-item" data-page="hpa">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          Autoscaler (HPA)
+        </a>
+        <a href="#config" class="nav-item" data-page="config">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          ConfigMap / Env
+        </a>
+
+        <div class="nav-section">Cluster Admin</div>
+        <a href="#context" class="nav-item" data-page="context">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          Cluster Context
+        </a>
+        <a href="#clone" class="nav-item" data-page="clone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Clone Namespace
+        </a>
+        <a href="#token" class="nav-item" data-page="token">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          Token Generator
+        </a>
+        <a href="#chpasswd" class="nav-item" data-page="chpasswd">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          Change Password
+        </a>
+      </nav>
+
+      <!-- Main Dynamic Content Area -->
+      <main id="main-content" class="content-area">
+        <!-- Content will be rendered dynamically by app.js -->
+      </main>
+    </div>
+
+    <!-- Bottom Terminal Log Output Panel -->
+    <div class="terminal-panel">
+      <div class="terminal-header">
+        <span>Console Log Output Stream</span>
+        <span id="ws-status-text" style="color: var(--accent-green);">● WebSocket Connected</span>
+      </div>
+      <div id="terminal-body" class="terminal-body">[System] KubeManage Console Initialized. Select operation from sidebar...</div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

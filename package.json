@@ -1,0 +1,20 @@
+{
+  "name": "kubemanage-ui",
+  "version": "1.0.0",
+  "description": "Web UI dashboard for Kubernetes cluster management (kube-manage)",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "node server/index.js",
+    "start": "NODE_ENV=production node server/index.js",
+    "hash-password": "node server/hash-password.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "ws": "^8.16.0"
+  }
+}
