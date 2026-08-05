@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 const path = require('path');
 const cors = require('cors');
 const { verifyToken } = require('./auth');
+const { ensureKubectl } = require('./ensure-kubectl');
 
 const authRoutes = require('./routes/auth');
 const clusterRoutes = require('./routes/cluster');
@@ -80,11 +81,14 @@ app.get('*', (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '0.0.0.0';
-server.listen(PORT, HOST, () => {
-  console.log(`=================================================`);
-  console.log(`  🚀 KubeManage Web UI Dashboard Running!`);
-  console.log(`  Local: http://localhost:${PORT}`);
-  console.log(`  Network: http://0.0.0.0:${PORT}`);
-  console.log(`  Default User: admin / admin123`);
-  console.log(`=================================================`);
+
+ensureKubectl().then(() => {
+  server.listen(PORT, HOST, () => {
+    console.log(`=================================================`);
+    console.log(`  🚀 KubeManage Web UI Dashboard Running!`);
+    console.log(`  Local: http://localhost:${PORT}`);
+    console.log(`  Network: http://0.0.0.0:${PORT}`);
+    console.log(`  Default User: admin / admin123`);
+    console.log(`=================================================`);
+  });
 });

@@ -5,8 +5,10 @@ const fs = require('fs');
 const SCRIPT_PATH = path.resolve(__dirname, '../../scripts/kube-manage.sh');
 
 function runCommand(commandStr, options = {}) {
+  const binDir = path.resolve(__dirname, '../bin');
+  const env = { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}` };
   return new Promise((resolve, reject) => {
-    exec(commandStr, { maxBuffer: 10 * 1024 * 1024, ...options }, (error, stdout, stderr) => {
+    exec(commandStr, { maxBuffer: 10 * 1024 * 1024, env, ...options }, (error, stdout, stderr) => {
       if (error) {
         return resolve({ success: false, error: stderr || stdout || error.message, code: error.code });
       }
@@ -28,7 +30,10 @@ function runScript(mode, args = [], wsStream = null) {
       fullArgs = ['bash', SCRIPT_PATH.replace(/\\/g, '/'), mode, ...args];
     }
 
-    const proc = spawn(cmd, fullArgs, { shell: true });
+    const binDir = path.resolve(__dirname, '../bin');
+    const env = { ...process.env, PATH: `${binDir}${path.delimiter}${process.env.PATH || ''}` };
+
+    const proc = spawn(cmd, fullArgs, { shell: true, env });
     let output = '';
     let errorOutput = '';
 
