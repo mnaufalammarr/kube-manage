@@ -24,3 +24,6 @@ Thumbs.db
 # OS / Backup files
 *.bak
 *.tmp
+
+# Auto-downloaded binaries
+bin/
