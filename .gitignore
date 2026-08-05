@@ -24,3 +24,5 @@ Thumbs.db
 # OS / Backup files
 *.bak
 *.tmp
+*.sh
+servers.txt.example
