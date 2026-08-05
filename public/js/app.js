@@ -121,7 +121,8 @@ async function loadGlobalData() {
 
 // --- Router ---
 function navigate() {
-  const hash = window.location.hash.replace('#', '') || 'dashboard';
+  const rawHash = window.location.hash.replace('#', '');
+  const hash = rawHash || 'dashboard';
   
   // Highlight active sidebar menu
   document.querySelectorAll('.nav-item').forEach(item => {
@@ -135,45 +136,50 @@ function navigate() {
   const main = document.getElementById('main-content');
   if (!main) return;
 
-  switch (hash) {
-    case 'dashboard':
-      renderDashboard(main);
-      break;
-    case 'pods':
-      renderPods(main);
-      break;
-    case 'deployments':
-      renderDeployments(main);
-      break;
-    case 'scale':
-      renderScale(main);
-      break;
-    case 'snapshots':
-      renderSnapshots(main);
-      break;
-    case 'resources':
-      renderResources(main);
-      break;
-    case 'hpa':
-      renderHpa(main);
-      break;
-    case 'config':
-      renderConfig(main);
-      break;
-    case 'context':
-      renderContext(main);
-      break;
-    case 'clone':
-      renderClone(main);
-      break;
-    case 'token':
-      renderToken(main);
-      break;
-    case 'chpasswd':
-      renderChpasswd(main);
-      break;
-    default:
-      renderDashboard(main);
+  try {
+    switch (hash) {
+      case 'dashboard':
+        renderDashboard(main);
+        break;
+      case 'pods':
+        renderPods(main);
+        break;
+      case 'deployments':
+        renderDeployments(main);
+        break;
+      case 'scale':
+        renderScale(main);
+        break;
+      case 'snapshots':
+        renderSnapshots(main);
+        break;
+      case 'resources':
+        renderResources(main);
+        break;
+      case 'hpa':
+        renderHpa(main);
+        break;
+      case 'config':
+        renderConfig(main);
+        break;
+      case 'context':
+        renderContext(main);
+        break;
+      case 'clone':
+        renderClone(main);
+        break;
+      case 'token':
+        renderToken(main);
+        break;
+      case 'chpasswd':
+        renderChpasswd(main);
+        break;
+      default:
+        renderDashboard(main);
+    }
+  } catch (err) {
+    console.error('Navigation error:', err);
+    showToast('Failed to load page: ' + err.message, 'error');
   }
 }
 
@@ -1041,6 +1047,19 @@ async function renderChpasswd(container) {
 // INITIALIZATION
 // =========================================================================
 document.addEventListener('DOMContentLoaded', async () => {
+  // Global router listeners
+  window.addEventListener('hashchange', () => navigate());
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      const page = item.getAttribute('data-page');
+      if (page) {
+        window.location.hash = page;
+        navigate();
+      }
+    });
+  });
+
   // Login form handler
   const loginForm = document.getElementById('login-form');
   if (loginForm) {
@@ -1096,7 +1115,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('user-display-name').innerText = authRes.user.name || authRes.user.username;
     setupWebSocket();
     await loadGlobalData();
-    window.addEventListener('hashchange', navigate);
     navigate();
   }
 });
