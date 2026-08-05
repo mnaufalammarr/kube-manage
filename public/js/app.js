@@ -848,11 +848,12 @@ async function renderContext(container) {
     showToast('Uploading kubeconfig...', 'info');
     const res = await apiCall('/cluster/contexts/upload', 'POST', formData);
     if (res.success) {
-      showToast('Kubeconfig merged & context activated!', 'success');
-      loadGlobalData();
+      showToast('Kubeconfig uploaded & context activated!', 'success');
+      fileInput.value = '';
+      await loadGlobalData();
       renderContext(container);
     } else {
-      showToast(res.error || 'Failed to upload kubeconfig', 'error');
+      showToast(res.error || res.message || 'Failed to upload kubeconfig', 'error');
     }
   };
 

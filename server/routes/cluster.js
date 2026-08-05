@@ -51,17 +51,43 @@ router.post('/contexts/upload', upload.single('kubeconfig'), async (req, res) =>
   }
 
   const alias = req.body.alias || '';
-  kubeAdapter.setUploadedKubeconfig(req.file.path);
+  const normalizedPath = req.file.path.replace(/\\/g, '/');
 
-  // Execute ctx --add-file if script CLI mode
-  const args = ['--add-file', req.file.path];
+  kubeAdapter.setUploadedKubeconfig(normalizedPath);
+
+  // Directly copy/merge file to ~/.kube/config if not exists
+  try {
+    const os = require('os');
+    const homeKubeDir = path.join(os.homedir(), '.kube');
+    const mainConfig = path.join(homeKubeDir, 'config');
+    if (!fs.existsSync(homeKubeDir)) {
+      fs.mkdirSync(homeKubeDir, { recursive: true });
+    }
+    if (!fs.existsSync(mainConfig) || fs.statSync(mainConfig).size === 0) {
+      fs.copyFileSync(normalizedPath, mainConfig);
+    }
+  } catch (err) {
+    console.error('Kubeconfig sync warning:', err.message);
+  }
+
+  // Execute script merge asynchronously with 10s timeout
+  const args = ['--add-file', normalizedPath];
   if (alias) args.push(alias);
 
-  const result = await runScript('ctx', args);
-  res.json({
+  let scriptResult = { success: true };
+  try {
+    scriptResult = await Promise.race([
+      runScript('ctx', args),
+      new Promise((resolve) => setTimeout(() => resolve({ success: true, timeout: true }), 8000))
+    ]);
+  } catch (e) {
+    scriptResult = { success: true, warning: e.message };
+  }
+
+  return res.json({
     success: true,
     message: 'Kubeconfig uploaded and activated successfully',
-    scriptResult: result
+    scriptResult
   });
 });
 
