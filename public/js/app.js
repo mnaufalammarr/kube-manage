@@ -27,6 +27,7 @@ async function apiCall(endpoint, method = 'GET', data = null) {
   const options = {
     method,
     credentials: 'include',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json'
     }
