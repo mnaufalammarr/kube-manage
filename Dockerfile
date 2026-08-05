@@ -18,7 +18,7 @@ RUN npm install --only=production
 COPY . .
 
 # Ensure script permissions
-RUN chmod +x kube-manage.sh audit_servers.sh clone_namespace.sh
+RUN chmod +x scripts/kube-manage.sh
 
 # Expose port
 EXPOSE 3000

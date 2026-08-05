@@ -2,7 +2,7 @@ const { exec, execFile, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-const SCRIPT_PATH = path.resolve(__dirname, '../../kube-manage.sh');
+const SCRIPT_PATH = path.resolve(__dirname, '../../scripts/kube-manage.sh');
 
 function runCommand(commandStr, options = {}) {
   return new Promise((resolve, reject) => {
