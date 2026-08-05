@@ -859,7 +859,9 @@ async function renderContext(container) {
 
   const res = await apiCall('/cluster/contexts');
   const ctxDiv = document.getElementById('contexts-list');
-  if (res.success && res.contexts) {
+  if (!ctxDiv) return;
+
+  if (res.success && res.contexts && res.contexts.length > 0) {
     ctxDiv.innerHTML = res.contexts.map(c => `
       <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; border-bottom:1px solid var(--border-color);">
         <div>

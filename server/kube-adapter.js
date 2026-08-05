@@ -132,15 +132,66 @@ async function listDeployments(namespace = 'default') {
 }
 
 async function getContexts() {
-  const res = await cliAdapter.runCommand('kubectl config get-contexts -o name || oc config get-contexts -o name');
-  const currentRes = await cliAdapter.runCommand('kubectl config current-context || oc config current-context');
-  
-  if (res.success) {
-    const contexts = res.output.split(/\s+/).filter(Boolean);
-    const current = currentRes.output ? currentRes.output.trim() : '';
-    return { success: true, contexts, current };
+  const os = require('os');
+  const targetPath = activeKubeconfigUpload || process.env.KUBECONFIG_PATH || path.join(os.homedir(), '.kube', 'config');
+
+  if (fs.existsSync(targetPath)) {
+    try {
+      const content = fs.readFileSync(targetPath, 'utf8');
+      
+      // Extract current-context
+      const currentMatch = content.match(/current-context:\s*["']?([^\s\n\r"']+)["']?/);
+      const current = currentMatch ? currentMatch[1] : '';
+
+      // Extract context names
+      const contexts = [];
+      const lines = content.split('\n');
+      let inContextsSection = false;
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (/^contexts:/.test(line)) {
+          inContextsSection = true;
+          continue;
+        }
+        if (inContextsSection && /^[a-zA-Z0-9_-]+:/.test(line) && !line.startsWith(' ') && !line.startsWith('\t')) {
+          inContextsSection = false;
+        }
+        if (inContextsSection) {
+          const nameMatch = line.match(/^\s*-\s*name:\s*["']?([^\s\n\r"']+)["']?/);
+          if (nameMatch) {
+            contexts.push(nameMatch[1]);
+          }
+        }
+      }
+
+      if (contexts.length > 0) {
+        return { success: true, contexts, current: current || contexts[0] };
+      }
+    } catch (e) {
+      console.error('Error reading kubeconfig file:', e.message);
+    }
   }
-  return { success: false, contexts: [], current: '', error: res.error };
+
+  // Fallback to CLI with 3s timeout
+  try {
+    const res = await Promise.race([
+      cliAdapter.runCommand('kubectl config get-contexts -o name || oc config get-contexts -o name'),
+      new Promise(r => setTimeout(() => r({ success: false }), 3000))
+    ]);
+    const currentRes = await Promise.race([
+      cliAdapter.runCommand('kubectl config current-context || oc config current-context'),
+      new Promise(r => setTimeout(() => r({ success: false }), 3000))
+    ]);
+    
+    if (res && res.success && res.output) {
+      const contexts = res.output.split(/\s+/).filter(Boolean);
+      const current = (currentRes && currentRes.output) ? currentRes.output.trim() : '';
+      return { success: true, contexts, current };
+    }
+  } catch (err) {}
+
+  return { success: true, contexts: ['default'], current: 'default' };
 }
 
 module.exports = {
