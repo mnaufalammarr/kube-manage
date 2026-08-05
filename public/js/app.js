@@ -4,6 +4,7 @@
 
 const state = {
   user: null,
+  token: localStorage.getItem('token') || null,
   currentNamespace: 'default',
   currentContext: '',
   ws: null,
@@ -25,10 +26,16 @@ function showToast(message, type = 'info') {
 async function apiCall(endpoint, method = 'GET', data = null) {
   const options = {
     method,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json'
     }
   };
+
+  if (state.token) {
+    options.headers['Authorization'] = `Bearer ${state.token}`;
+  }
+
   if (data && !(data instanceof FormData)) {
     options.body = JSON.stringify(data);
   } else if (data instanceof FormData) {
@@ -51,6 +58,8 @@ async function apiCall(endpoint, method = 'GET', data = null) {
 
 function handleUnauthorized() {
   state.user = null;
+  state.token = null;
+  localStorage.removeItem('token');
   document.getElementById('login-container').classList.remove('hidden');
   document.getElementById('app-layout').classList.add('hidden');
 }
@@ -1043,6 +1052,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       const res = await apiCall('/auth/login', 'POST', { username, password });
       if (res.success) {
         state.user = res.user;
+        state.token = res.token;
+        if (res.token) {
+          localStorage.setItem('token', res.token);
+        }
         document.getElementById('login-container').classList.add('hidden');
         document.getElementById('app-layout').classList.remove('hidden');
         document.getElementById('user-display-name').innerText = res.user.name || res.user.username;
